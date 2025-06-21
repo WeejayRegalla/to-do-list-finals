@@ -1,3 +1,4 @@
+
 const dayEl = document.getElementById("currentDay");
 const monthEl = document.getElementById("currentMonth");
 const modal = document.getElementById('taskModal');
@@ -8,7 +9,13 @@ const tabs = document.querySelectorAll(".tab");
 
 // Modal control
 addBtn?.addEventListener("click", () => modal.style.display = "flex");
-closeBtn?.addEventListener("click", () => modal.style.display = "none");
+closeBtn?.addEventListener("click", () => {
+  modal.style.display = "none";
+  clearModalFields();
+  const btn = document.querySelector(".modal-footer button");
+  btn.textContent = "Add";
+  btn.onclick = addTask;
+});
 
 // Date display
 function formatDateWithSuffix(day) {
@@ -89,6 +96,7 @@ function loadTasks() {
         <p class="task-desc">${task.details}</p>
       </div>
       <div class="task-actions">
+        <button class="edit-btn" onclick="editTask(${task.id})">✏️</button>
         <button class="delete-btn" onclick="deleteTask(${task.id})">❌</button>
         <button class="complete-btn" onclick="toggleComplete(${task.id})">✔️</button>
       </div>
@@ -99,6 +107,60 @@ function loadTasks() {
   filterTasks(document.querySelector(".tab.active")?.textContent || "All");
 
 }
+function editTask(id) {
+  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  const task = tasks.find(t => t.id === id);
+  if (!task) return;
+
+  document.getElementById('taskTitle').value = task.title;
+  document.getElementById('taskDetails').value = task.details;
+  document.getElementById('taskTime').value = task.time;
+  document.getElementById('editingTaskId').value = task.id;
+
+  modal.style.display = "flex";
+
+  // Change the modal button to say "Update"
+  const btn = document.querySelector(".modal-footer button");
+  btn.textContent = "Update";
+  btn.onclick = updateTask;
+}
+function updateTask() {
+  const id = parseInt(document.getElementById('editingTaskId').value);
+  const title = document.getElementById('taskTitle').value.trim();
+  const details = document.getElementById('taskDetails').value.trim();
+  const time = document.getElementById('taskTime').value;
+
+  if (!title || !details || !time) {
+    alert("Please fill all fields");
+    return;
+  }
+
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  tasks = tasks.map(task => {
+    if (task.id === id) {
+      return { ...task, title, details, time };
+    }
+    return task;
+  });
+
+  localStorage.setItem("tasks", JSON.stringify(tasks));
+  alert("✅ Task updated!");
+  modal.style.display = "none";
+  clearModalFields();
+  loadTasks();
+
+  // Reset to add mode
+  const btn = document.querySelector(".modal-footer button");
+  btn.textContent = "Add";
+  btn.onclick = addTask;
+}
+function clearModalFields() {
+  document.getElementById("taskTitle").value = '';
+  document.getElementById("taskDetails").value = '';
+  document.getElementById("taskTime").value = '';
+  document.getElementById("editingTaskId").value = '';
+}
+
 
 // Delete task
 function deleteTask(id) {
@@ -183,16 +245,29 @@ function checkDueTasks() {
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-function showReminder(message) {
-  const box = document.getElementById("reminderBox");
-  box.textContent = message;
-  box.style.display = "block";
+if ("Notification" in window && Notification.permission !== "granted") {
+    Notification.requestPermission();
+  }
 
-  setTimeout(() => {
-    box.style.display = "none";
-  }, 6000); // hide after 6 seconds
-}
-
+  function showReminder(message) {
+    // Browser notification
+    if ("Notification" in window && Notification.permission === "granted") {
+      new Notification("Task Reminder", {
+        body: message,
+        icon: "images/icon1.png" // optional icon
+      });
+    } else {
+      // Fallback: show custom reminder box
+      const box = document.getElementById("reminderBox");
+      if (box) {
+        box.textContent = message;
+        box.style.display = "block";
+        setTimeout(() => {
+          box.style.display = "none";
+        }, 6000);
+      }
+    }
+  }
 
 
 // On page load
