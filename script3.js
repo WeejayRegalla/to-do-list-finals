@@ -217,7 +217,7 @@ tabs.forEach(tab => {
 function checkDueTasks() {
   const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   const now = new Date();
-  const alertTimes = [30, 15, 10, 5];
+  const alertTimes = [10, 5];
 
   console.log("🔄 Checking due tasks at:", now.toLocaleTimeString());
 
@@ -229,25 +229,23 @@ function checkDueTasks() {
     due.setHours(h, m, 0, 0);
 
     const diffMin = Math.floor((due - now) / 60000);
-    console.log(`🕒 Task: "${task.title}" is due in ${diffMin} min(s).`);
 
-    if (!task.alerts) task.alerts = {};
+    if (diffMin <= 30 && diffMin >= 0) {
+      if (!task.alerts) task.alerts = {};
 
-    alertTimes.forEach(min => {
-      if (diffMin === min && !task.alerts[min]) {
-        console.log(`🔔 Sending ${min} min alert for "${task.title}"`);
-        showReminder(`⏰ "${task.title}" is due in ${min} minutes.`);
-        task.alerts[min] = true;
-      }
-    });
+      alertTimes.forEach(min => {
+        if (diffMin <= min && !task.alerts[min]) {
+          showReminder(`⏰ "${task.title}" is due in ${diffMin} minute(s).`);
+          task.alerts[min] = true;
+        }
+      });
+    }
   });
 
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
 
-if ("Notification" in window && Notification.permission !== "granted") {
-    Notification.requestPermission();
-  }
+
 
   function showReminder(message) {
     // Browser notification
