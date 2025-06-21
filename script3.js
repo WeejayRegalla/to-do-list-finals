@@ -60,7 +60,7 @@ function addTask() {
   modal.style.display = "none";
   clearModalFields();
   loadTasks();
-  updateSummary();
+
 }
 
 // Clear modal fields
@@ -97,7 +97,7 @@ function loadTasks() {
   });
 
   filterTasks(document.querySelector(".tab.active")?.textContent || "All");
-  updateSummary();
+
 }
 
 // Delete task
@@ -106,7 +106,7 @@ function deleteTask(id) {
   tasks = tasks.filter(t => t.id !== id);
   localStorage.setItem("tasks", JSON.stringify(tasks));
   loadTasks();
-  updateSummary();
+
 }
 
 // Mark task as complete/incomplete
@@ -118,7 +118,7 @@ function toggleComplete(id) {
   });
   localStorage.setItem("tasks", JSON.stringify(tasks));
   loadTasks();
-  updateSummary();
+
 }
 
 // Time formatter
@@ -157,6 +157,8 @@ function checkDueTasks() {
   const now = new Date();
   const alertTimes = [30, 15, 10, 5];
 
+  console.log("🔄 Checking due tasks at:", now.toLocaleTimeString());
+
   tasks.forEach(task => {
     if (task.completed) return;
 
@@ -165,10 +167,13 @@ function checkDueTasks() {
     due.setHours(h, m, 0, 0);
 
     const diffMin = Math.floor((due - now) / 60000);
+    console.log(`🕒 Task: "${task.title}" is due in ${diffMin} min(s).`);
+
     if (!task.alerts) task.alerts = {};
 
     alertTimes.forEach(min => {
       if (diffMin === min && !task.alerts[min]) {
+        console.log(`🔔 Sending ${min} min alert for "${task.title}"`);
         showReminder(`⏰ "${task.title}" is due in ${min} minutes.`);
         task.alerts[min] = true;
       }
@@ -177,6 +182,7 @@ function checkDueTasks() {
 
   localStorage.setItem("tasks", JSON.stringify(tasks));
 }
+
 function showReminder(message) {
   const box = document.getElementById("reminderBox");
   box.textContent = message;
@@ -193,9 +199,6 @@ function showReminder(message) {
 window.onload = () => {
   setDateToday?.();
   loadTasks?.();
-  updateSummary?.();
   checkDueTasks();
   setInterval(checkDueTasks, 60000); // every 1 minute
 };
-
-
