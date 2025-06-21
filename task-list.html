@@ -31,6 +31,7 @@
       <p class="task-desc">In the Office.</p>
     </div>
     <div class="task-actions">
+  
       <button class="delete-btn" onclick="deleteTask(this)">❌</button>
       <button class="complete-btn" onclick="toggleComplete(this)">✔️</button>
     </div>
@@ -44,6 +45,9 @@
       </a>
       <div class="nav-item" id="modaladdbtn">
         <i class="fa-solid fa-plus"></i> <br />Add
+      </div>
+      <div class="nav-item">
+        <i class="fa-solid fa-magnifying-glass"></i><br /> Search
       </div>
     </div>
   </div>
@@ -72,7 +76,7 @@
   </div>
 </div>
 
-
+  <div id="reminderBox" class="reminder-box"></div>
   <script src="script3.js"></script>
 </body>
 </html>
