@@ -215,14 +215,14 @@ tabs.forEach(tab => {
 
 // Notification: 15 minutes before due time
 function checkDueTasks() {
-  const tasks = JSON.parse(localStorage.getItem("tasks")) || [];
+  let tasks = JSON.parse(localStorage.getItem("tasks")) || [];
   const now = new Date();
-  const alertTimes = [10, 5];
+  const alertTimes = [30, 15, 10, 5];
 
   console.log("🔄 Checking due tasks at:", now.toLocaleTimeString());
 
-  tasks.forEach(task => {
-    if (task.completed) return;
+  tasks = tasks.map(task => {
+    if (task.completed) return task;
 
     const [h, m] = task.time.split(":").map(Number);
     const due = new Date();
@@ -235,11 +235,14 @@ function checkDueTasks() {
 
       alertTimes.forEach(min => {
         if (diffMin <= min && !task.alerts[min]) {
+          console.log(`🔔 Sending ${min} min alert for "${task.title}"`);
           showReminder(`⏰ "${task.title}" is due in ${diffMin} minute(s).`);
           task.alerts[min] = true;
         }
       });
     }
+
+    return task;
   });
 
   localStorage.setItem("tasks", JSON.stringify(tasks));
